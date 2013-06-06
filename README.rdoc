@@ -13,49 +13,49 @@ representation of a datetime.
 Lunch times should range from 11:30 AM to 3:00 PM, at 15-minute intervals.
 Dinner times should range from 5:30 PM to 10:00 PM, at 15-minute intervals.
 
-1)  Identify any bugs you see in the given code.
+1.  Identify any bugs you see in the given code.
 
-2)  Write your own fixed and refactored version of this code. Describe/justify 
+2.  Write your own fixed and refactored version of this code. Describe/justify 
     your design decisions.
 
 ==Original Code
 
-def lunch_times
-  start_hour = 0
-  lt = {}
-  3.times do |n|
-    time = ((Time.at(self.delivery_time_utc).beginning_of_day) + (start_hour + n).hours)
-    4.times do |t|
-      time = time + (15.minutes * (t ))
-      if n !=3 || n == 3 && t == 0
-        f = time.strftime("%-1I:%M%p") == "12:00AM" ? "12:00PM" : time.strftime("%-1I:%M%p")
-        lt[f] = time.to_i
-      end
-    end
-  end
-  lt.keys.sort!
-  return lt
-end
-
-def dinner_times
-  dt = {}
-  6.times do |n|
-    time = ((Time.at(self.delivery_time_utc).beginning_of_day) + (17 + n).hours)
-    4.times do |t|
-      time = time + (15.minutes * (t - 1))
-      if (n == 0 && t > 2) || n > 0
-        f = time.strftime("%-1I:%M%p")
-        if n == 5 && t < 3
-          dt[f] = time.to_i
-        elsif n < 5 || n <= 4
-          dt[f] = time.to_i
+  def lunch_times
+    start_hour = 0
+    lt = {}
+    3.times do |n|
+      time = ((Time.at(self.delivery_time_utc).beginning_of_day) + (start_hour + n).hours)
+      4.times do |t|
+        time = time + (15.minutes * (t ))
+        if n !=3 || n == 3 && t == 0
+          f = time.strftime("%-1I:%M%p") == "12:00AM" ? "12:00PM" : time.strftime("%-1I:%M%p")
+          lt[f] = time.to_i
         end
       end
     end
+    lt.keys.sort!
+    return lt
   end
-  dt.keys.sort!
-  return dt
-end
+
+  def dinner_times
+    dt = {}
+    6.times do |n|
+      time = ((Time.at(self.delivery_time_utc).beginning_of_day) + (17 + n).hours)
+      4.times do |t|
+        time = time + (15.minutes * (t - 1))
+        if (n == 0 && t > 2) || n > 0
+          f = time.strftime("%-1I:%M%p")
+          if n == 5 && t < 3
+            dt[f] = time.to_i
+          elsif n < 5 || n <= 4
+            dt[f] = time.to_i
+          end
+        end
+      end
+    end
+    dt.keys.sort!
+    return dt
+  end
 
 ==Response
 
