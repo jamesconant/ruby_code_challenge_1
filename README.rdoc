@@ -1,0 +1,162 @@
+=Ruby Code Challenge 1
+
+==Summary
+
+The following two methods, lunch_times and dinner_times, are instance methods on
+an object. The purpose of each method is to generate a hash of datetimes, in 
+which the key is a human-readable string of just the time portion of the 
+datetime (ex. "1:11AM"), and the value is the integer representation of the 
+datetimes (ex. 1370495493). The date portion of the datetime is based on 
+delivery_time_utc, which is an attribute on the object and also an integer 
+representation of a datetime.
+
+Lunch times should range from 11:30 AM to 3:00 PM, at 15-minute intervals.
+Dinner times should range from 5:30 PM to 10:00 PM, at 15-minute intervals.
+
+1)  Identify any bugs you see in the given code.
+
+2)  Write your own fixed and refactored version of this code. Describe/justify 
+    your design decisions.
+
+==Original Code
+
+def lunch_times
+  start_hour = 0
+  lt = {}
+  3.times do |n|
+    time = ((Time.at(self.delivery_time_utc).beginning_of_day) + (start_hour + n).hours)
+    4.times do |t|
+      time = time + (15.minutes * (t ))
+      if n !=3 || n == 3 && t == 0
+        f = time.strftime("%-1I:%M%p") == "12:00AM" ? "12:00PM" : time.strftime("%-1I:%M%p")
+        lt[f] = time.to_i
+      end
+    end
+  end
+  lt.keys.sort!
+  return lt
+end
+
+def dinner_times
+  dt = {}
+  6.times do |n|
+    time = ((Time.at(self.delivery_time_utc).beginning_of_day) + (17 + n).hours)
+    4.times do |t|
+      time = time + (15.minutes * (t - 1))
+      if (n == 0 && t > 2) || n > 0
+        f = time.strftime("%-1I:%M%p")
+        if n == 5 && t < 3
+          dt[f] = time.to_i
+        elsif n < 5 || n <= 4
+          dt[f] = time.to_i
+        end
+      end
+    end
+  end
+  dt.keys.sort!
+  return dt
+end
+
+==Response
+
+===Overall problems
+
+1.  No tests
+
+2.  Highly coupled, and thus brittle code
+
+3.  Violates DRY - lunch_time and dinner_time are looking for same data
+
+4.  Lacking seperation of concerns
+
+5.  Highly susceptible to off-by-one errors
+
+6.  Not reusable or easily extensible
+
+===Specific problems
+
+1.  setting start_hour variable in lunch_time is redundant, simply increases
+    lines of code and wastes space
+
+2.  start_hour variable is not appropriately set, which causes all times to
+    processed by the iterators to be incorrect.
+
+3.  using #times to iterate and pass through 1 through 4 causes the first time
+    to not be the actual start of the time range, but the next 15 minute
+    increment.
+
+4.  "if n !=3 || n == 3 && t == 0" has several problems. First, n != || n == 3
+    is a meaningless logical operation and will always return true. Second,
+    t will never equal 0 because the values being passed through it are 1
+    through 4.
+
+5.  The lt hash never has any values added to it because the aforementioned
+    statement will always return false.
+
+6.  Under no circumestances will the result of "time.strftime("%-1I:%M%p") == 
+    "12:00AM"" be true, so right off the bat the ternary operation is pointless.
+
+7.  Even if it could resolve true, the return value makes no sense. If the value
+    equals "12:00AM" return "12:00PM" doesn't seem to have any reasonable use.
+
+8.  Sorting the keys at the end of the process is redundant because the keys are
+    already sorted by virtue of the order they were iterated through and added.
+
+9.  calling return at the end of both methods is redundant.
+
+10. When calling strftime("%-1I:%M%p") the 1 is a meaningless typo and the '-'
+    is redundant as %I already returns a non-padded value.
+
+11. Off by one error in the '6.times' iterator.
+
+12. First hour run through this iterator would be 6pm rather than 5pm.
+
+13. Last hour run through this iterator would be 12am rather than 10pm.
+
+14. "if (n == 0 && t > 2) || n > 0" is pointless because n will never equal 0
+    and it will always be greater than zero, thus always returning true.
+
+15. In "elsif n < 5 || n <= 4", these two logical checks are functionally the
+    same thing. Simply use 'else'.
+
+16. The fact that the second if clause within the second iterator has to check
+    the values that are being passed through suggests a lack of confidence or
+    understanding as to what is being passed through to the block. More
+    Importantly it highlights the fact that the #times method isn't the best
+    tool for this particular iteration pattern.
+
+===Fixing it
+
+1.  Write tests!
+
+2.  Get code to functional state
+
+3.  Continue cycle of refactor/test until problems that have been highlighted 
+    have been cleared up and the code is easily read and understood.
+
+4.  Extract the core functionalties of lunch_time and dinner_time methods into
+    seperate methods with seperate and clear responsibilities.
+
+5.  Use ranges rather than integers and #times. Allows you to start from 0 and
+    thus not skip beginning of range in advertantly.
+
+6.  Use range variables that are derived programatically from user input (or
+    wrapper methods) rather than static ranges. With static ranges, you could
+    change the idea of what constitutes 'lunch time' in one area and forget to 
+    change it in the range as well. This way, the meal_time method doesn't need 
+    to know how those range variables are derived.
+
+7.  Be assertive when adding pairs to the hash. If the item should not be added
+    to the hash it should not be passed through the block.
+
+8.  Although #meal_time could be made a private method, I like keeping it public
+    so that it can be more easily used to generate dynamic custom meal_times.
+
+9.  Clean up the functionality that generates the time variable. It's not very
+    clear what the purpose of the logic that follows is times is attempting to
+    do. Moving the generation of the time variable to it's own method helps
+    not only add clarity but removes the risk of breaking it by tinkering with
+    the rest of the larger method.
+
+10. Refactor the generation of the times so that it is clear both what the
+    intent of the method is and how it works.
